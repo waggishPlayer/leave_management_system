@@ -1,16 +1,15 @@
 const mongoose = require('mongoose')
-const models = require('../models/index_models')
+const employees = require('../models/employees')
+const leave = require('../models/leave')
 const jwt = require('jsonwebtoken')
 const functions = require('../controllers/functions')
 const multer = require('multer')
 
-
-
-
+//Register a user
 module.exports.register = async (req, res) => {
     const {first_name, middle_name, last_name, address, date_of_birth, username, phone_number, manager_id, role, month_salary, email, password} = req.body
     try{
-        const employee = await models.employees.create({first_name, middle_name, last_name, address, date_of_birth, username, phone_number, manager_id, role, month_salary, email, password})
+        const employee = await employees.create({first_name, middle_name, last_name, address, date_of_birth, username, phone_number, manager_id, role, month_salary, email, password})
 
         const subject = 'Employee Details';
         const message = `
@@ -50,10 +49,11 @@ module.exports.register = async (req, res) => {
     }
 }
 
+//User login
 module.exports.login_post = async (req, res) => {
     const {email, password} = req.body
     try{
-        const employee = await models.employees.findOne({email})
+        const employee = await employees.findOne({email})
         const token = auth_middleware.create_token(employee);
         if (token) {
             return res.status(200).json({user: employee._id, token});

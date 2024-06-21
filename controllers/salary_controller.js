@@ -1,4 +1,5 @@
-const models = require('../models/index_models')
+const employees = require('../models/employees')
+const leave = require('../models/leave')
 const mongoose = require('mongoose')
 
 
@@ -22,15 +23,15 @@ module.exports.final_salary = async (req, res, next) => {
             filter = { ...search_params };
 
             // Fetch all employees based on filter criteria
-            const all_employees = await models.employees.find(filter).skip(skip).limit(limit);
+            const all_employees = await employees.find(filter).skip(skip).limit(limit);
             const all_salary_data = [];
 
             for (let emp of all_employees) {
                 const { _id: emp_id, first_name, last_name, month_salary } = emp;
 
                 // Fetch approved leaves for each employee
-                const approved_leaves = await models.leave.find({ employee_id: emp_id, leave_status: 'Approved' });
-                const total_leave_days = approved_leaves.reduce((sum, leave) => sum + models.leave.number_of_days, 0);
+                const approved_leaves = await leave.find({ employee_id: emp_id, leave_status: 'Approved' });
+                const total_leave_days = approved_leaves.reduce((sum, leave) => sum + leave.number_of_days, 0);
                 const deducted_salary = Math.round((month_salary / 31) * total_leave_days);
                 const final_salary = month_salary - deducted_salary;
 
@@ -48,15 +49,15 @@ module.exports.final_salary = async (req, res, next) => {
         } else if (req.user.role === 'Employee') {
             // Employee can view their own salary
             const emp_id = req.user.userId; // Assuming userId is set in the token
-            const emp = await models.employees.findById(emp_id);
+            const emp = await employees.findById(emp_id);
 
             if (!emp) {
                 return res.status(404).send('Employee not found');
             }
 
             const { first_name, last_name, month_salary } = emp;
-            const approved_leaves = await models.leave.find({ employee_id: emp_id, leave_status: 'Approved' });
-            const total_leave_days = approved_leaves.reduce((sum, leave) => sum + models.leave.number_of_days, 0);
+            const approved_leaves = await leave.find({ employee_id: emp_id, leave_status: 'Approved' });
+            const total_leave_days = approved_leaves.reduce((sum, leave) => sum + leave.number_of_days, 0);
             const deducted_salary = Math.round((month_salary / 31) * total_leave_days);
             const final_salary = month_salary - deducted_salary;
 

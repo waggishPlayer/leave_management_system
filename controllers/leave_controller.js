@@ -1,4 +1,6 @@
-const models = require('../models/index_models')
+const employees = require('../models/employees')
+const leave = require('../models/leave')
+const holidays = require('../models/holidays')
 const mongoose = require('mongoose')
 const functions = require('../controllers/functions')
 
@@ -8,7 +10,7 @@ module.exports.leave_application_post = async (req, res) => {
     try {
         const { employee_id, leave_type, leave_date, leave_end_date, reason_for_leave } = req.body;
 
-        const holidays_list = await models.holidays.find({
+        const holidays_list = await holidays.find({
             date: {
                 $gte: new Date(leave_date),
                 $lte: new Date(leave_end_date)
@@ -72,7 +74,7 @@ module.exports.leave_history_get = async (req, res) => {
             search_params.employee_id = new mongoose.Types.ObjectId(search_params.employee_id);
         }
 
-        const leave_records = await models.leave.aggregate([
+        const leave_records = await leave.aggregate([
             { $match: search_params },
             {
                 $lookup: {
@@ -102,7 +104,7 @@ module.exports.leave_history_get = async (req, res) => {
 module.exports.leave_history_manager_get = async(req, res) =>{
     try {
         let leave_records;
-        leave_records = await models.leave.aggregate([
+        leave_records = await leave.aggregate([
             { 
                 $match: { employee_id:new mongoose.Types.ObjectId(req.params.id) } 
             },
@@ -127,7 +129,7 @@ module.exports.leave_history_manager_get = async(req, res) =>{
 module.exports.leave_update = async (req, res, next) => {
     const employeeid = req.params.id;
     try {
-        const updated_record = await models.leave.findOneAndUpdate(
+        const updated_record = await leave.findOneAndUpdate(
             { employee_id: employeeid },
             {
                 $set: {

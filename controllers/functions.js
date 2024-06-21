@@ -1,4 +1,6 @@
-const models = require('../models/index_models')
+const employees = require('../models/employees')
+const leave = require('../models/leave')
+const holidays = require('../models/holidays')
 const mongoose = require('mongoose')
 const nodemailer = require('nodemailer')
 require('dotenv').config();
