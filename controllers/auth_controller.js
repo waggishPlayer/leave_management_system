@@ -1,19 +1,53 @@
 const { default: mongoose } = require('mongoose')
-const employees = require('../models/employees')
-const leave = require('../models/leave')
-const holidays = require('../models/holidays')
-const bcrypt = require('bcrypt')
+const models = require('../models/index_models')
+const {employees, holidays, leave} = models
 const jwt = require('jsonwebtoken')
 const { result } = require('lodash')
+const nodemailer = require('nodemailer')
 const auth_controller = require('../middlewares/auth_middleware')
 const auth_middleware = require('../middlewares/auth_middleware')
 const multer = require('multer')
+require('dotenv').config();
+
+
 
 module.exports.register = async (req, res) => {
     const {first_name, middle_name, last_name, address, date_of_birth, username, phone_number, manager_id, role, month_salary, email, password} = req.body
     try{
         const employee = await employees.create({first_name, middle_name, last_name, address, date_of_birth, username, phone_number, manager_id, role, month_salary, email, password})
-        res.status(200).json({employee: employee._id})
+
+        const subject = 'Employee Details';
+        const message = `
+            Hello, ${first_name} ${last_name},
+
+            Welcome to the company!
+
+            Here are your Company details:
+            
+            Name: ${first_name} ${middle_name} ${last_name}
+            Date Of Birth: ${date_of_birth}
+            Address: ${address}
+            Username: ${username}
+            Contact Number: ${phone_number}
+            Manager ID: ${manager_id}
+            Role: ${role}
+            Monthly Salary: ${month_salary} Rupees
+            Company email: ${email}
+            Password: ${password}
+
+
+
+            Thank you,
+        `;
+
+        const emailSent = await send_email(email, subject, message);
+
+        if (emailSent) {
+            res.status(200).json({ employee: employee._id });
+        } else {
+            res.status(500).json("User Signup successful, but failed to send email.");
+        }
+
     }catch(err){
         console.log(err)
         res.status(400).json("User Signup not successful")
@@ -275,6 +309,34 @@ module.exports.final_salary = async (req, res, next) => {
     }
 }
 
+// Function to send email
+const send_email = async (email, subject, message) => {
+    try {
+        const user = process.env.EMAIL
+        const pass = process.env.PASSWORD
+
+        let transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: user,
+                pass: pass
+            }
+        });
+
+        let info = await transporter.sendMail({
+            from: user,
+            to: email,
+            subject: subject,
+            text: message
+        });
+
+        console.log('Message sent: %s', info.messageId);
+        return true;
+    } catch (err) {
+        console.error('Error sending email:', err);
+        return false;
+    }
+};
 
 //Upload
 module.exports.upload = multer({
