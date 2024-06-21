@@ -1,8 +1,7 @@
 const express = require('express')
-// var bodyParser = require('body-parser')
 const app = express()
 const db = require('../leave_management/db')
-const authroutes = require('../leave_management/routes/authroutes')
+const authroutes = require('./routes/authroutes')
 const port = 5000
 
 //middlewares

@@ -66,4 +66,4 @@ employees_schema.pre('save',async function(next){
 })
 
 const employees = mongoose.model("employees_info", employees_schema)
-module.exports = employees
+module.exports.employees
